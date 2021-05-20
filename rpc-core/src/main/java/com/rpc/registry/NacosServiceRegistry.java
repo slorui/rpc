@@ -8,10 +8,15 @@ import com.rpc.exception.RpcError;
 import com.rpc.exception.RpcException;
 import com.rpc.loadbalancer.LoadBalancer;
 import com.rpc.loadbalancer.RandomLoadBalancer;
+import com.rpc.registry.instance.RegistryInstance;
+import com.rpc.util.BeanUtil;
 import lombok.extern.slf4j.Slf4j;
 
+import java.beans.IntrospectionException;
 import java.net.InetSocketAddress;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * @author slorui
@@ -55,11 +60,21 @@ public class NacosServiceRegistry implements ServerRegistry {
     public InetSocketAddress loopUpService(String serviceName) {
         try {
             List<Instance> instances = namingService.getAllInstances(serviceName);
-            Instance instance = loadBalancer.select(instances);
+            RegistryInstance instance = loadBalancer.select(copyInstance(instances));
             return new InetSocketAddress(instance.getIp(), instance.getPort());
         } catch (Exception e) {
             log.error("获取服务时有错误发生:", e);
         }
         return null;
+    }
+
+    public List<RegistryInstance> copyInstance(List<Instance> instances) throws IntrospectionException {
+        List<RegistryInstance> registryInstances = new ArrayList<>();
+        for(Instance instance : instances){
+            RegistryInstance registryInstance = new RegistryInstance();
+            BeanUtil.copyBean(registryInstance, instance);
+            registryInstances.add(registryInstance);
+        }
+        return registryInstances;
     }
 }

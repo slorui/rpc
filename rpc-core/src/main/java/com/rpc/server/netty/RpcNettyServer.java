@@ -32,10 +32,10 @@ public class RpcNettyServer extends AbstractRpcServer {
     private final int port;
 
 
-    public RpcNettyServer(String host, int port) {
+    public RpcNettyServer(String host, int port,ServerRegistry serverRegistry) {
         this.host = host;
         this.port = port;
-        this.serverRegistry = new NacosServiceRegistry(null);
+        this.serverRegistry = serverRegistry;
         scanService();
     }
 

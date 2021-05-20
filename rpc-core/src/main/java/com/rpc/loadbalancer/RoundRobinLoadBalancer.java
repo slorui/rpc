@@ -1,8 +1,9 @@
 package com.rpc.loadbalancer;
 
-import com.alibaba.nacos.api.naming.pojo.Instance;
+import com.rpc.registry.instance.RegistryInstance;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * @author slorui
@@ -10,11 +11,11 @@ import java.util.List;
  */
 public class RoundRobinLoadBalancer implements LoadBalancer {
 
-
     private int index = 0;
 
     @Override
-    public Instance select(List<Instance> instances) {
+    public RegistryInstance select(List<RegistryInstance> instances) {
         return instances.get(++index % instances.size());
     }
+
 }

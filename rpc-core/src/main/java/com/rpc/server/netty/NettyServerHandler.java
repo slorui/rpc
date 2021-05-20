@@ -28,7 +28,7 @@ public class NettyServerHandler extends SimpleChannelInboundHandler<RpcRequest> 
     }
 
     @Override
-    protected void channelRead0(ChannelHandlerContext ctx, RpcRequest rpcRequest) throws Exception {
+    protected void channelRead0(ChannelHandlerContext ctx, RpcRequest rpcRequest){
         try {
             log.info("服务器接收到请求: {}", rpcRequest);
             String interfaceName = rpcRequest.getInterfaceName();
@@ -42,7 +42,7 @@ public class NettyServerHandler extends SimpleChannelInboundHandler<RpcRequest> 
     }
 
     @Override
-    public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
+    public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) {
         log.error("处理过程调用时有错误发生:");
         cause.printStackTrace();
         ctx.close();

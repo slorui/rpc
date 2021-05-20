@@ -1,6 +1,6 @@
 package com.rpc.loadbalancer;
 
-import com.alibaba.nacos.api.naming.pojo.Instance;
+import com.rpc.registry.instance.RegistryInstance;
 
 import java.util.List;
 
@@ -10,6 +10,6 @@ import java.util.List;
  */
 public interface LoadBalancer {
 
-    Instance select(List<Instance> instances);
+    RegistryInstance select(List<RegistryInstance> instances);
 
 }

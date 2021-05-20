@@ -11,6 +11,7 @@ import com.rpc.pojo.RpcResponse;
 import com.rpc.provider.DefaultServiceProvider;
 import com.rpc.provider.ServiceProvider;
 import com.rpc.registry.NacosServiceRegistry;
+import com.rpc.registry.ServerRegistry;
 import com.rpc.serializer.KryoSerializer;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.*;
@@ -49,12 +50,12 @@ public class RpcNettyClient implements RpcClient {
                 });
     }
 
-    private NacosServiceRegistry serviceRegistry;
+    private ServerRegistry serviceRegistry;
     private ServiceProvider serviceProvider;
 
-    public RpcNettyClient() {
+    public RpcNettyClient(ServerRegistry serverRegistry) {
         this.serviceProvider = new DefaultServiceProvider();
-        this.serviceRegistry = new NacosServiceRegistry();
+        this.serviceRegistry = serverRegistry;
     }
 
     @Override
