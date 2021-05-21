@@ -1,10 +1,10 @@
 package com.rpc.server.nio;
 
 import com.rpc.registry.NacosServiceRegistry;
-import com.rpc.registry.ServerRegistry;
+import com.rpc.registry.ServiceRegistry;
+import com.rpc.registry.instance.RegistryInstance;
 import com.rpc.server.AbstractRpcServer;
 import com.rpc.server.RequestHandler;
-import com.rpc.server.RpcServer;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.IOException;
@@ -29,7 +29,7 @@ public class RpcSocketServer extends AbstractRpcServer {
     private RequestHandler requestHandler = new RequestHandler();
     private final String host;
     private final int port;
-    private final ServerRegistry serverRegistry;
+    private final ServiceRegistry serviceRegistry;
 
     public RpcSocketServer(String host,int port){
         this.host = host;
@@ -38,7 +38,7 @@ public class RpcSocketServer extends AbstractRpcServer {
         ThreadFactory factory = Executors.defaultThreadFactory();
         threadPoll = new ThreadPoolExecutor(CORE_POOL_SIZE, MAXIMUM_POOL_SIZE, KEEP_ALIVE_TIME,
                 TimeUnit.SECONDS, worker, factory);
-        this.serverRegistry = new NacosServiceRegistry();
+        this.serviceRegistry = new NacosServiceRegistry();
         scanService();
     }
 
@@ -58,7 +58,9 @@ public class RpcSocketServer extends AbstractRpcServer {
     }
 
     @Override
-    public <T> void publishService(String serviceName, Object service) {
-        serverRegistry.register(serviceName,new InetSocketAddress(host, port));
+    public <T> void publishService(String serviceName, RegistryInstance instance) {
+        instance.setIp(host);
+        instance.setPort(port);
+        serviceRegistry.register(serviceName,instance);
     }
 }

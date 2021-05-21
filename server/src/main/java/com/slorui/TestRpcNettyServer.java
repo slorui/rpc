@@ -14,6 +14,11 @@ import com.rpc.server.netty.RpcNettyServer;
 public class TestRpcNettyServer {
 
     public static void main(String[] args) {
-        RpcNettyServer rpcNettyServer = new RpcNettyServer("127.0.0.1",8081,new NacosServiceRegistry());
+        RpcNettyServer rpcNettyServer = new RpcNettyServer("127.0.0.1",8081,
+                new NacosServiceRegistry());
+        RpcNettyServer rpcNettyServer1 = new RpcNettyServer("127.0.0.1",8082,
+                new NacosServiceRegistry());
+        RpcNettyServer rpcNettyServer2 = new RpcNettyServer("127.0.0.1",8083,
+                new NacosServiceRegistry());
     }
 }

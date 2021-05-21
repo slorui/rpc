@@ -19,7 +19,7 @@ import java.util.stream.Collectors;
  * data 2021/5/20
  */
 @Slf4j
-public class RedisServiceRegistry implements ServerRegistry{
+public class RedisServiceRegistry extends AbstractServiceRegistry {
 
     private static final String HOST = "127.0.0.1";
 
@@ -44,8 +44,17 @@ public class RedisServiceRegistry implements ServerRegistry{
     @Override
     public void register(String serviceName, InetSocketAddress inetSocketAddress) {
         try {
-            jedis.zadd(serviceName,1, JSON.toJSONString(new RegistryInstance(inetSocketAddress.getHostName(),
-                    inetSocketAddress.getPort())));
+            jedis.zadd(serviceName,1, JSON.toJSONString(createRegistryInstance(serviceName ,inetSocketAddress)));
+        } catch (Exception e) {
+            log.error("注册服务时有错误发生:", e);
+            throw new RpcException(RpcError.REGISTER_SERVICE_FAILED);
+        }
+    }
+
+    @Override
+    public void register(String serviceName, RegistryInstance registryInstance) {
+        try {
+            jedis.zadd(serviceName,1, JSON.toJSONString(registryInstance));
         } catch (Exception e) {
             log.error("注册服务时有错误发生:", e);
             throw new RpcException(RpcError.REGISTER_SERVICE_FAILED);

@@ -10,8 +10,7 @@ import com.rpc.pojo.RpcRequest;
 import com.rpc.pojo.RpcResponse;
 import com.rpc.provider.DefaultServiceProvider;
 import com.rpc.provider.ServiceProvider;
-import com.rpc.registry.NacosServiceRegistry;
-import com.rpc.registry.ServerRegistry;
+import com.rpc.registry.ServiceRegistry;
 import com.rpc.serializer.KryoSerializer;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.*;
@@ -50,12 +49,12 @@ public class RpcNettyClient implements RpcClient {
                 });
     }
 
-    private ServerRegistry serviceRegistry;
+    private ServiceRegistry serviceRegistry;
     private ServiceProvider serviceProvider;
 
-    public RpcNettyClient(ServerRegistry serverRegistry) {
+    public RpcNettyClient(ServiceRegistry serviceRegistry) {
         this.serviceProvider = new DefaultServiceProvider();
-        this.serviceRegistry = serverRegistry;
+        this.serviceRegistry = serviceRegistry;
     }
 
     @Override
@@ -63,13 +62,13 @@ public class RpcNettyClient implements RpcClient {
         InetSocketAddress service;
         ChannelFuture future;
         try {
-            service = (InetSocketAddress) serviceProvider.getService(rpcRequest.getInterfaceName());
-            if (service == null) {
-                service = serviceRegistry.loopUpService(rpcRequest.getInterfaceName());
-                if (service == null) {
-                    throw new RpcException(RpcError.SERVICE_NOT_FOUND);
-                }
-                serviceProvider.register(rpcRequest.getInterfaceName(), service);
+            service = serviceRegistry.loopUpService(rpcRequest.getInterfaceName());
+            if(service == null){
+                service = (InetSocketAddress) serviceProvider.getService(rpcRequest.getInterfaceName());
+            }
+            if (service == null){
+                log.error("服务未发现");
+                throw new RpcException(RpcError.SERVICE_NOT_FOUND);
             }
             future = bootstrap.connect(service.getAddress(), service.getPort()).sync();
             log.info("客户端连接到服务器 {}:{}", service.getAddress(), service.getPort());

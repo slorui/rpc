@@ -14,4 +14,6 @@ import java.lang.annotation.Target;
 public @interface Service {
 
     public String name() default "";
+
+    public double weight() default 100;
 }

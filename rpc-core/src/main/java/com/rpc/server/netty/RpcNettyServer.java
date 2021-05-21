@@ -3,12 +3,11 @@ package com.rpc.server.netty;
 
 import com.rpc.coder.CommonDecoder;
 import com.rpc.coder.CommonEncoder;
-import com.rpc.registry.NacosServiceRegistry;
-import com.rpc.registry.ServerRegistry;
+import com.rpc.registry.ServiceRegistry;
+import com.rpc.registry.instance.RegistryInstance;
 import com.rpc.serializer.KryoSerializer;
 import com.rpc.server.AbstractRpcServer;
 import com.rpc.server.ShutDownHook;
-import com.rpc.server.netty.NettyServerHandler;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.*;
 import io.netty.channel.nio.NioEventLoopGroup;
@@ -27,15 +26,15 @@ import java.net.InetSocketAddress;
 @Slf4j
 public class RpcNettyServer extends AbstractRpcServer {
 
-    private final ServerRegistry serverRegistry;
+    private final ServiceRegistry serviceRegistry;
     private final String host;
     private final int port;
 
 
-    public RpcNettyServer(String host, int port,ServerRegistry serverRegistry) {
+    public RpcNettyServer(String host, int port, ServiceRegistry serviceRegistry) {
         this.host = host;
         this.port = port;
-        this.serverRegistry = serverRegistry;
+        this.serviceRegistry = serviceRegistry;
         scanService();
     }
 
@@ -75,7 +74,9 @@ public class RpcNettyServer extends AbstractRpcServer {
     }
 
     @Override
-    public <T> void publishService(String serviceName, Object service) {
-        serverRegistry.register(serviceName,new InetSocketAddress(host, port));
+    public <T> void publishService(String serviceName, RegistryInstance instance) {
+        instance.setIp(host);
+        instance.setPort(port);
+        serviceRegistry.register(serviceName,instance);
     }
 }

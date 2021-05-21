@@ -26,7 +26,7 @@ public class RegistryInstance {
     private boolean ephemeral = true;
     private String clusterName;
     private String serviceName;
-    private Map<String, String> metadata = new HashMap();
+    private Map<String, String> metadata;
 
     public RegistryInstance() {
     }
@@ -103,10 +103,14 @@ public class RegistryInstance {
 
     public void addMetadata(String key, String value) {
         if (this.metadata == null) {
-            this.metadata = new HashMap(4);
+            this.metadata = new HashMap<>(4);
         }
 
         this.metadata.put(key, value);
+    }
+
+    public Object getMetadataValue(String key){
+        return this.metadata.get(key);
     }
 
 

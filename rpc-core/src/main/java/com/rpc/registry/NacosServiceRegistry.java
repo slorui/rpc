@@ -16,14 +16,13 @@ import java.beans.IntrospectionException;
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 /**
  * @author slorui
  * data 2021/5/19
  */
 @Slf4j
-public class NacosServiceRegistry implements ServerRegistry {
+public class NacosServiceRegistry extends AbstractServiceRegistry {
 
     private static final String SERVER_ADDR = "127.0.0.1:8848";
     private static final NamingService namingService ;
@@ -49,7 +48,12 @@ public class NacosServiceRegistry implements ServerRegistry {
     @Override
     public void register(String serviceName, InetSocketAddress inetSocketAddress) {
         try {
-            namingService.registerInstance(serviceName, inetSocketAddress.getHostName(),inetSocketAddress.getPort());
+            Instance instance = new Instance();
+            instance.setIp(inetSocketAddress.getHostName());
+            instance.setPort(inetSocketAddress.getPort());
+            instance.setWeight(100);
+            instance.setServiceName(serviceName);
+            namingService.registerInstance(serviceName, instance);
         } catch (NacosException e) {
             log.error("注册服务时有错误发生:", e);
             throw new RpcException(RpcError.REGISTER_SERVICE_FAILED);
@@ -57,9 +61,23 @@ public class NacosServiceRegistry implements ServerRegistry {
     }
 
     @Override
+    public void register(String serviceName, RegistryInstance registryInstance) {
+        Instance instance = new Instance();
+        try {
+            BeanUtil.copyBean(instance, registryInstance);
+            namingService.registerInstance(serviceName, instance);
+        } catch (IntrospectionException | NacosException e) {
+            log.error("注册服务时有错误发生:", e);
+        }
+    }
+
+    @Override
     public InetSocketAddress loopUpService(String serviceName) {
         try {
             List<Instance> instances = namingService.getAllInstances(serviceName);
+            if (instances == null){
+                return null;
+            }
             RegistryInstance instance = loadBalancer.select(copyInstance(instances));
             return new InetSocketAddress(instance.getIp(), instance.getPort());
         } catch (Exception e) {

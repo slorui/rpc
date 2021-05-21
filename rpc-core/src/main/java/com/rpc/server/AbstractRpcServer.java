@@ -6,10 +6,12 @@ import com.rpc.exception.RpcError;
 import com.rpc.exception.RpcException;
 import com.rpc.provider.DefaultServiceProvider;
 import com.rpc.provider.ServiceProvider;
+import com.rpc.registry.instance.RegistryInstance;
 import com.rpc.util.ReflectUtil;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.Set;
+import java.util.concurrent.Executors;
 
 /**
  * @author slorui
@@ -45,30 +47,35 @@ public abstract class AbstractRpcServer implements RpcServer{
         Set<Class<?>> classSet = ReflectUtil.getClasses(baskPackage);
         for (Class<?> clazz: classSet){
             if(clazz.isAnnotationPresent(Service.class)){
-                String serviceName = clazz.getAnnotation(Service.class).name();
+                Service annotation = clazz.getAnnotation(Service.class);
+                String serviceName = annotation.name();
+                double weight = annotation.weight();
                 Object obj;
                 try {
                     obj = clazz.newInstance();
-
                 } catch (IllegalAccessException | InstantiationException e) {
                     log.error("创建 " + clazz + " 时有错误发生");
                     continue;
                 }
+                RegistryInstance registryInstance = new RegistryInstance();
+                registryInstance.setServiceName(serviceName);
+                registryInstance.setWeight(weight);
                 if ("".equals(serviceName)){
                     Class<?>[] interfaces = clazz.getInterfaces();
                     for(Class<?> klass : interfaces){
-                        publishService(klass.getCanonicalName(), obj);
+                        publishService(klass.getCanonicalName(), registryInstance);
                         serviceProvider.register(klass.getCanonicalName(),obj);
                     }
                 }else{
-                    publishService(serviceName, obj);
+                    publishService(serviceName, registryInstance);
                     serviceProvider.register(serviceName,obj);
                 }
             }
         }
         synchronized (this){
             if(!isStart){
-                start();
+                Executors.newSingleThreadExecutor()
+                        .submit(this::start);
                 isStart = !isStart;
             }
         }

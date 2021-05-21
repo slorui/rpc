@@ -12,14 +12,13 @@ import org.I0Itec.zkclient.ZkClient;
 import java.net.InetSocketAddress;
 import java.util.Collections;
 import java.util.List;
-import java.util.stream.Collectors;
 
 /**
  * @author slorui
  * data 2021/5/20
  */
 @Slf4j
-public class ZookeeperServiceRegistry implements ServerRegistry{
+public class ZookeeperServiceRegistry extends AbstractServiceRegistry {
 
     private static final String SERVER_ADDR = "127.0.0.1:2181";
 
@@ -53,9 +52,22 @@ public class ZookeeperServiceRegistry implements ServerRegistry{
             if(!zkClient.exists(path)){
                 zkClient.createEphemeral(path);
             }
-            zkClient.writeData(path, JSON.toJSONString(Collections.singleton(
-                    new RegistryInstance(inetSocketAddress.getHostName(),
-                            inetSocketAddress.getPort()))));
+            zkClient.writeData(path, JSON.toJSONString(
+                    Collections.singleton(createRegistryInstance(serviceName, inetSocketAddress))));
+        } catch (Exception e) {
+            log.error("注册服务时有错误发生:", e);
+            throw new RpcException(RpcError.REGISTER_SERVICE_FAILED);
+        }
+    }
+
+    @Override
+    public void register(String serviceName, RegistryInstance registryInstance) {
+        try {
+            String path = ROOT_PATH + "/" + serviceName;
+            if(!zkClient.exists(path)){
+                zkClient.createEphemeral(path);
+            }
+            zkClient.writeData(path, JSON.toJSONString(Collections.singleton(registryInstance)));
         } catch (Exception e) {
             log.error("注册服务时有错误发生:", e);
             throw new RpcException(RpcError.REGISTER_SERVICE_FAILED);
