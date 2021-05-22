@@ -28,6 +28,8 @@ public abstract class AbstractRpcServer implements RpcServer{
     }
 
     public void scanService(){
+        setServiceProvider(serviceProvider);
+
         String mainClassName = ReflectUtil.getStackTrace();
         Class<?> startClass;
         try {
@@ -64,11 +66,11 @@ public abstract class AbstractRpcServer implements RpcServer{
                     Class<?>[] interfaces = clazz.getInterfaces();
                     for(Class<?> klass : interfaces){
                         publishService(klass.getCanonicalName(), registryInstance);
-                        serviceProvider.register(klass.getCanonicalName(),obj);
+                        serviceProvider.register(klass.getCanonicalName(),obj, registryInstance);
                     }
                 }else{
                     publishService(serviceName, registryInstance);
-                    serviceProvider.register(serviceName,obj);
+                    serviceProvider.register(serviceName,obj, registryInstance);
                 }
             }
         }
@@ -80,4 +82,6 @@ public abstract class AbstractRpcServer implements RpcServer{
             }
         }
     }
+
+    public abstract void setServiceProvider(ServiceProvider serviceProvider);
 }

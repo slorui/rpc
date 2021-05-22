@@ -1,6 +1,8 @@
 package com.rpc.registry;
 
 import com.alibaba.fastjson.JSON;
+import com.alibaba.nacos.api.exception.NacosException;
+import com.alibaba.nacos.api.naming.pojo.Instance;
 import com.rpc.exception.RpcError;
 import com.rpc.exception.RpcException;
 import com.rpc.loadbalancer.LoadBalancer;
@@ -11,6 +13,7 @@ import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.Jedis;
 
 import java.net.InetSocketAddress;
+import java.util.Iterator;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -72,5 +75,21 @@ public class RedisServiceRegistry extends AbstractServiceRegistry {
             log.error("获取服务时有错误发生:", e);
         }
         return null;
+    }
+
+    @Override
+    public void clearRegistry() {
+        if(!serviceProvider.isEmpty()) {
+            Iterator<String> iterator = serviceProvider.iterator();
+            while(iterator.hasNext()) {
+                String serviceName = iterator.next();
+                RegistryInstance service = (RegistryInstance) serviceProvider.getInstance(serviceName);
+                try {
+                    jedis.zrem(serviceName, JSON.toJSONString(service));
+                } catch (Exception e) {
+                    log.error("注销服务 {} 失败", serviceName, e);
+                }
+            }
+        }
     }
 }

@@ -1,6 +1,7 @@
 package com.rpc.registry.instance;
 
 import com.alibaba.nacos.api.common.Constants;
+import com.alibaba.nacos.api.naming.PreservedMetadataKeys;
 import com.alibaba.nacos.api.naming.pojo.Instance;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -11,12 +12,15 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 
+import static com.alibaba.nacos.api.common.Constants.NUMBER_PATTERN;
+
 /**
  * @author slorui
  * data 2021/5/20
  */
 
 public class RegistryInstance {
+
     private String instanceId;
     private String ip;
     private int port;
@@ -36,6 +40,21 @@ public class RegistryInstance {
         this.port = port;
     }
 
+    public boolean isEnabled() {
+        return enabled;
+    }
+
+    public void setEnabled(boolean enabled) {
+        this.enabled = enabled;
+    }
+
+    public boolean isEphemeral() {
+        return ephemeral;
+    }
+
+    public void setEphemeral(boolean ephemeral) {
+        this.ephemeral = ephemeral;
+    }
 
     public String getInstanceId() {
         return this.instanceId;
@@ -141,5 +160,4 @@ public class RegistryInstance {
     private static boolean strEquals(String str1, String str2) {
         return Objects.equals(str1, str2);
     }
-
 }

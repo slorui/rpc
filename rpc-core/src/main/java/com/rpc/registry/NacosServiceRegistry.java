@@ -15,6 +15,7 @@ import lombok.extern.slf4j.Slf4j;
 import java.beans.IntrospectionException;
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 /**
@@ -94,5 +95,23 @@ public class NacosServiceRegistry extends AbstractServiceRegistry {
             registryInstances.add(registryInstance);
         }
         return registryInstances;
+    }
+
+    @Override
+    public void clearRegistry() {
+        if(!serviceProvider.isEmpty()) {
+            Iterator<String> iterator = serviceProvider.iterator();
+            while(iterator.hasNext()) {
+                String serviceName = iterator.next();
+                Object service = serviceProvider.getInstance(serviceName);
+                Instance instance = new Instance();
+                try {
+                    BeanUtil.copyBean(instance, service);
+                    namingService.deregisterInstance(serviceName, instance);
+                } catch (NacosException | IntrospectionException e) {
+                    log.error("注销服务 {} 失败", serviceName, e);
+                }
+            }
+        }
     }
 }

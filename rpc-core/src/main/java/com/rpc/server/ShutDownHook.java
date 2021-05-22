@@ -1,5 +1,6 @@
 package com.rpc.server;
 
+import com.rpc.registry.ServiceRegistry;
 import com.rpc.util.NacosUtil;
 import lombok.extern.slf4j.Slf4j;
 
@@ -17,12 +18,9 @@ public class ShutDownHook {
         return shutdownHook;
     }
 
-    public void addClearAllHook(){
+    public void addClearAllHook(ServiceRegistry serviceRegistry){
         log.info("注册服务关闭钩子函数");
-        Runtime.getRuntime().addShutdownHook(new Thread(() -> {
-            NacosUtil.clearRegistry();
-        }));
+        Runtime.getRuntime().addShutdownHook(new Thread(serviceRegistry::clearRegistry));
     }
-
 
 }

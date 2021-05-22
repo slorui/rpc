@@ -14,8 +14,7 @@ public class RoundRobinLoadBalancer implements LoadBalancer {
 
     protected static class WeightedRoundRobin {
         private int weight;
-        private AtomicLong current = new AtomicLong(0);
-        private long lastUpdate;
+        private final AtomicLong current = new AtomicLong(0);
 
         public int getWeight() {
             return weight;
@@ -33,17 +32,7 @@ public class RoundRobinLoadBalancer implements LoadBalancer {
         public void sel(int total) {
             current.addAndGet(-1 * total);
         }
-
-        public long getLastUpdate() {
-            return lastUpdate;
-        }
-
-        public void setLastUpdate(long lastUpdate) {
-            this.lastUpdate = lastUpdate;
-        }
     }
-
-    private static final String CURRENT_WEIGHT = "currentWeight";
 
     private final ConcurrentHashMap<String ,ConcurrentHashMap<String ,WeightedRoundRobin>> methodWeightMap
         = new ConcurrentHashMap<>();

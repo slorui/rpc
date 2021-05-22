@@ -3,6 +3,8 @@ package com.rpc.server.netty;
 
 import com.rpc.coder.CommonDecoder;
 import com.rpc.coder.CommonEncoder;
+import com.rpc.provider.ServiceProvider;
+import com.rpc.registry.NacosServiceRegistry;
 import com.rpc.registry.ServiceRegistry;
 import com.rpc.registry.instance.RegistryInstance;
 import com.rpc.serializer.KryoSerializer;
@@ -31,11 +33,20 @@ public class RpcNettyServer extends AbstractRpcServer {
     private final int port;
 
 
+    public RpcNettyServer(String host, int port) {
+        this(host, port, new NacosServiceRegistry());
+    }
+
     public RpcNettyServer(String host, int port, ServiceRegistry serviceRegistry) {
         this.host = host;
         this.port = port;
         this.serviceRegistry = serviceRegistry;
         scanService();
+    }
+
+    @Override
+    public void setServiceProvider(ServiceProvider serviceProvider) {
+        serviceRegistry.setServiceProvider(serviceProvider);
     }
 
     @Override
@@ -62,9 +73,8 @@ public class RpcNettyServer extends AbstractRpcServer {
                         }
                     });
             ChannelFuture future = bootstrap.bind(port).sync();
-            ShutDownHook.shutDownHook().addClearAllHook();
+            ShutDownHook.shutDownHook().addClearAllHook(serviceRegistry);
             future.channel().closeFuture().sync();
-
         } catch (InterruptedException e) {
             log.error("启动服务器时有错误发生: ", e);
         }finally {

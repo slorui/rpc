@@ -1,10 +1,12 @@
 package com.rpc.server.nio;
 
+import com.rpc.provider.ServiceProvider;
 import com.rpc.registry.NacosServiceRegistry;
 import com.rpc.registry.ServiceRegistry;
 import com.rpc.registry.instance.RegistryInstance;
 import com.rpc.server.AbstractRpcServer;
 import com.rpc.server.RequestHandler;
+import com.rpc.server.ShutDownHook;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.IOException;
@@ -43,9 +45,15 @@ public class RpcSocketServer extends AbstractRpcServer {
     }
 
     @Override
+    public void setServiceProvider(ServiceProvider serviceProvider) {
+        serviceRegistry.setServiceProvider(serviceProvider);
+    }
+
+    @Override
     public void start(){
         try (ServerSocket serverSocket = new ServerSocket(port)) {
             log.info("服务正在启动");
+            ShutDownHook.shutDownHook().addClearAllHook(serviceRegistry);
             Socket socket;
             while ((socket = serverSocket.accept()) != null) {
                 log.info("消费者连接：{}：{}", socket.getInetAddress(),socket.getPort());

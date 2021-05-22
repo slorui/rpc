@@ -1,6 +1,8 @@
 package com.rpc.registry;
 
 import com.alibaba.fastjson.JSON;
+import com.alibaba.nacos.api.exception.NacosException;
+import com.alibaba.nacos.api.naming.pojo.Instance;
 import com.rpc.exception.RpcError;
 import com.rpc.exception.RpcException;
 import com.rpc.loadbalancer.LoadBalancer;
@@ -11,6 +13,7 @@ import org.I0Itec.zkclient.ZkClient;
 
 import java.net.InetSocketAddress;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
 
 /**
@@ -89,5 +92,19 @@ public class ZookeeperServiceRegistry extends AbstractServiceRegistry {
             log.error("获取服务时有错误发生:", e);
         }
         return null;
+    }
+
+    @Override
+    public void clearRegistry() {
+        List<String> children = zkClient.getChildren(ROOT_PATH);
+        if(!children.isEmpty()) {
+            for (String childPath : children) {
+                try {
+                    zkClient.delete(childPath);
+                } catch (Exception e) {
+                    log.error("注销服务 {} 失败", childPath, e);
+                }
+            }
+        }
     }
 }

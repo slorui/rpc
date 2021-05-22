@@ -13,25 +13,20 @@ import java.util.concurrent.ConcurrentHashMap;
  * data 2021/5/19
  */
 @Slf4j
-public class DefaultServiceProvider implements ServiceProvider {
+public class DefaultServiceProvider extends AbstractServiceProvider {
 
-    private final Map<String ,Object> serviceMap = new ConcurrentHashMap<>();
-    private final Set<String > registeredService = ConcurrentHashMap.newKeySet();
 
     @Override
-    public  <T> void register(String interfaceName, T service) {
-        String serviceName = service.getClass().getCanonicalName();
+    public  <T> void register(String interfaceName, T service, T instance) {
         if(registeredService.contains(interfaceName)){
             return;
         }
         synchronized (this){
             registeredService.add(interfaceName);
             serviceMap.put(interfaceName, service);
+            instanceMap.put(interfaceName, instance);
         }
     }
 
-    @Override
-    public Object getService(String serviceName) {
-        return serviceMap.get(serviceName);
-    }
+
 }
