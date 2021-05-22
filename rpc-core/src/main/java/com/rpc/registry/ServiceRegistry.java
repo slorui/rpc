@@ -4,6 +4,7 @@ import com.rpc.provider.ServiceProvider;
 import com.rpc.registry.instance.RegistryInstance;
 
 import java.net.InetSocketAddress;
+import java.util.List;
 
 /**
  * @author slorui
@@ -15,7 +16,7 @@ public interface ServiceRegistry {
 
     void register(String serviceName, RegistryInstance instance);
 
-    InetSocketAddress loopUpService(String serviceName);
+    <T> List<RegistryInstance> loopUpService(String serviceName);
 
     void clearRegistry();
 

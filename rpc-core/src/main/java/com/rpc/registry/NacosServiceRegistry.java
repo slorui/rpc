@@ -73,14 +73,14 @@ public class NacosServiceRegistry extends AbstractServiceRegistry {
     }
 
     @Override
-    public InetSocketAddress loopUpService(String serviceName) {
+    public List<RegistryInstance> loopUpService(String serviceName) {
         try {
             List<Instance> instances = namingService.getAllInstances(serviceName);
             if (instances == null){
                 return null;
             }
-            RegistryInstance instance = loadBalancer.select(copyInstance(instances));
-            return new InetSocketAddress(instance.getIp(), instance.getPort());
+//            RegistryInstance instance = loadBalancer.select(copyInstance(instances));
+            return copyInstance(instances);
         } catch (Exception e) {
             log.error("获取服务时有错误发生:", e);
         }

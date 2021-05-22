@@ -5,6 +5,7 @@ import com.rpc.registry.instance.RegistryInstance;
 
 import java.net.InetSocketAddress;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 /**
@@ -24,7 +25,7 @@ public abstract class AbstractServiceRegistry implements ServiceRegistry{
     public abstract void register(String serviceName, InetSocketAddress inetSocketAddress);
 
     @Override
-    public abstract InetSocketAddress loopUpService(String serviceName);
+    public abstract List<RegistryInstance> loopUpService(String serviceName);
 
     public RegistryInstance createRegistryInstance(String serviceName, InetSocketAddress inetSocketAddress){
         RegistryInstance registryInstance = new RegistryInstance();

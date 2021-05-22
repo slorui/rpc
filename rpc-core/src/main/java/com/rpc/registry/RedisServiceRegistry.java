@@ -65,12 +65,11 @@ public class RedisServiceRegistry extends AbstractServiceRegistry {
     }
 
     @Override
-    public InetSocketAddress loopUpService(String serviceName) {
+    public List<RegistryInstance> loopUpService(String serviceName) {
         try {
             List<RegistryInstance> instances = jedis.zrange(serviceName, 0, -1)
                     .stream().map(str -> JSON.parseObject(str, RegistryInstance.class)).collect(Collectors.toList());
-            RegistryInstance instance = loadBalancer.select(instances);
-            return new InetSocketAddress(instance.getIp(), instance.getPort());
+            return instances;
         }catch (Exception e) {
             log.error("获取服务时有错误发生:", e);
         }

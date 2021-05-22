@@ -78,7 +78,7 @@ public class ZookeeperServiceRegistry extends AbstractServiceRegistry {
     }
 
     @Override
-    public InetSocketAddress loopUpService(String serviceName) {
+    public List<RegistryInstance> loopUpService(String serviceName) {
         try {
             String obj = zkClient.readData(ROOT_PATH + "/" + serviceName);
             if(obj == null){
@@ -86,8 +86,7 @@ public class ZookeeperServiceRegistry extends AbstractServiceRegistry {
                 throw new RpcException(RpcError.SERVICE_NOT_FOUND);
             }
             List<RegistryInstance> instances = JSON.parseArray(obj, RegistryInstance.class);
-             RegistryInstance instance = loadBalancer.select(instances);
-            return new InetSocketAddress(instance.getIp(), instance.getPort());
+            return instances;
         }catch (Exception e) {
             log.error("获取服务时有错误发生:", e);
         }

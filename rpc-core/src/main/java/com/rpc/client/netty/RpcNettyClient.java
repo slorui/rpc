@@ -1,16 +1,22 @@
 package com.rpc.client.netty;
 
 
+import com.rpc.client.AbstractRpcClient;
 import com.rpc.client.RpcClient;
 import com.rpc.coder.CommonDecoder;
 import com.rpc.coder.CommonEncoder;
+import com.rpc.consumer.DefaultServiceConsumer;
+import com.rpc.consumer.ServiceConsumer;
 import com.rpc.exception.RpcError;
 import com.rpc.exception.RpcException;
+import com.rpc.loadbalancer.LoadBalancer;
+import com.rpc.loadbalancer.RandomLoadBalancer;
 import com.rpc.pojo.RpcRequest;
 import com.rpc.pojo.RpcResponse;
 import com.rpc.provider.DefaultServiceProvider;
 import com.rpc.provider.ServiceProvider;
 import com.rpc.registry.ServiceRegistry;
+import com.rpc.registry.instance.RegistryInstance;
 import com.rpc.serializer.KryoSerializer;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.*;
@@ -27,14 +33,14 @@ import java.net.InetSocketAddress;
  * data 2021/5/19
  */
 @Slf4j
-public class RpcNettyClient implements RpcClient {
+public class RpcNettyClient extends AbstractRpcClient {
 
-    private static final Bootstrap bootstrap;
+    private static final Bootstrap BOOTSTRAP;
 
     static {
         EventLoopGroup group = new NioEventLoopGroup();
-        bootstrap = new Bootstrap();
-        bootstrap.group(group)
+        BOOTSTRAP = new Bootstrap();
+        BOOTSTRAP.group(group)
                 .channel(NioSocketChannel.class)
                 .option(ChannelOption.SO_KEEPALIVE,true)
                 .handler(new ChannelInitializer<SocketChannel>() {
@@ -49,29 +55,25 @@ public class RpcNettyClient implements RpcClient {
                 });
     }
 
-    private ServiceRegistry serviceRegistry;
-    private ServiceProvider serviceProvider;
-
     public RpcNettyClient(ServiceRegistry serviceRegistry) {
-        this.serviceProvider = new DefaultServiceProvider();
-        this.serviceRegistry = serviceRegistry;
+        this(serviceRegistry, new RandomLoadBalancer());
+
+    }
+
+    public RpcNettyClient(ServiceRegistry serviceRegistry, LoadBalancer loadBalancer) {
+        this(serviceRegistry, loadBalancer, new DefaultServiceConsumer());
+    }
+
+    public RpcNettyClient(ServiceRegistry serviceRegistry, LoadBalancer loadBalancer, ServiceConsumer serviceProvider){
+        super(serviceRegistry, loadBalancer, serviceProvider);
     }
 
     @Override
-    public Object sendRequest(RpcRequest rpcRequest) {
-        InetSocketAddress service;
+    public Object sendRequest(RpcRequest rpcRequest, RegistryInstance instance) {
         ChannelFuture future;
         try {
-            service = serviceRegistry.loopUpService(rpcRequest.getInterfaceName());
-            if(service == null){
-                service = (InetSocketAddress) serviceProvider.getService(rpcRequest.getInterfaceName());
-            }
-            if (service == null){
-                log.error("服务未发现");
-                throw new RpcException(RpcError.SERVICE_NOT_FOUND);
-            }
-            future = bootstrap.connect(service.getAddress(), service.getPort()).sync();
-            log.info("客户端连接到服务器 {}:{}", service.getAddress(), service.getPort());
+            future = BOOTSTRAP.connect(instance.getIp(), instance.getPort()).sync();
+            log.info("客户端连接到服务器 {}:{}", instance.getIp(), instance.getPort());
             Channel channel = future.channel();
             if(channel != null){
                 // 将请求写出
@@ -82,6 +84,7 @@ public class RpcNettyClient implements RpcClient {
                         log.error("发送消息时有错误发生: ", result.cause());
                     }
                 });
+                // 等待服务器端关闭channel
                 channel.closeFuture().sync();
                 // 阻塞等待结果
                 AttributeKey<RpcResponse> key = AttributeKey.valueOf("rpcResponse");

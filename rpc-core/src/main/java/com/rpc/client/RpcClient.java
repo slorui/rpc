@@ -9,5 +9,5 @@ import com.rpc.pojo.RpcRequest;
  */
 public interface RpcClient {
 
-    Object sendRequest(RpcRequest rpcRequest);
+    Object doRequest(RpcRequest rpcRequest);
 }
