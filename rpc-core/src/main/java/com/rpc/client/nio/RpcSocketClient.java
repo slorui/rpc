@@ -6,9 +6,14 @@ import com.rpc.consumer.DefaultServiceConsumer;
 import com.rpc.consumer.ServiceConsumer;
 import com.rpc.loadbalancer.LoadBalancer;
 import com.rpc.loadbalancer.RandomLoadBalancer;
+import com.rpc.pojo.Result;
 import com.rpc.pojo.RpcRequest;
+import com.rpc.pojo.RpcResponse;
+import com.rpc.registry.NacosServiceRegistry;
 import com.rpc.registry.ServiceRegistry;
 import com.rpc.registry.instance.RegistryInstance;
+import com.rpc.tolerant.FailFastInvoker;
+import com.rpc.tolerant.Invoker;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.IOException;
@@ -27,7 +32,7 @@ public class RpcSocketClient extends AbstractRpcClient {
     private int port;
 
     public RpcSocketClient(String host, int port){
-        this(host, port, null);
+        this(host, port, new NacosServiceRegistry());
     }
 
     public RpcSocketClient(String host, int port,ServiceRegistry serviceRegistry) {
@@ -41,7 +46,21 @@ public class RpcSocketClient extends AbstractRpcClient {
     }
 
     public RpcSocketClient(ServiceRegistry serviceRegistry, LoadBalancer loadBalancer, ServiceConsumer serviceProvider){
-        super(serviceRegistry, loadBalancer, serviceProvider);
+        this(serviceRegistry, serviceProvider, new FailFastInvoker(loadBalancer));
+    }
+
+    public RpcSocketClient(ServiceRegistry serviceRegistry, LoadBalancer loadBalancer, ServiceConsumer serviceProvider,
+                           Invoker invoker){
+        this(serviceRegistry, serviceProvider, invoker);
+        invoker.setLoadBalancer(loadBalancer);
+    }
+
+    public RpcSocketClient(ServiceRegistry serviceRegistry,ServiceConsumer serviceConsumer, Invoker invoker) {
+        super(serviceRegistry, serviceConsumer, invoker);
+        if(invoker.getLoadBalancer() == null){
+            invoker.setLoadBalancer(new RandomLoadBalancer());
+        }
+        invoker.setRpcClient(this);
     }
 
     /**
@@ -51,22 +70,22 @@ public class RpcSocketClient extends AbstractRpcClient {
      * @param port
      * @return
      */
-    public Object sendRequest(RpcRequest rpcRequest, String host, int port){
+    public Result sendRequest(RpcRequest rpcRequest, String host, int port){
         try (Socket socket = new Socket(host, port)) {
             ObjectOutputStream objectOutputStream = new ObjectOutputStream(socket.getOutputStream());
             ObjectInputStream objectInputStream = new ObjectInputStream(socket.getInputStream());
             objectOutputStream.writeObject(rpcRequest);
             objectOutputStream.flush();
-            return objectInputStream.readObject();
+            return (Result) objectInputStream.readObject();
         } catch (IOException | ClassNotFoundException e) {
             log.error("调用时发送错误",e);
-            return null;
+            throw new RuntimeException();
         }
     }
 
 
     @Override
-    public Object sendRequest(RpcRequest rpcRequest, RegistryInstance instance) {
+    public Result sendRequest(RpcRequest rpcRequest, RegistryInstance instance) {
         return sendRequest(rpcRequest,host,port);
     }
 }

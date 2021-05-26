@@ -16,7 +16,7 @@ import java.io.Serializable;
 @ToString
 @AllArgsConstructor
 @NoArgsConstructor
-public class RpcResponse<T> implements Serializable {
+public class RpcResponse<T> implements Serializable,Result {
 
 //    private static final long serialVersionUID = 1L;
 
@@ -25,6 +25,11 @@ public class RpcResponse<T> implements Serializable {
     private String message;
 
     private T data;
+
+    @Override
+    public T getData() {
+        return data;
+    }
 
     public static <T> RpcResponse<T> success(T data){
         RpcResponse<T> response = new RpcResponse<>();

@@ -1,6 +1,7 @@
 package com.rpc.client;
 
 
+import com.rpc.pojo.Result;
 import com.rpc.pojo.RpcRequest;
 import com.rpc.pojo.RpcResponse;
 import lombok.AllArgsConstructor;
@@ -9,6 +10,8 @@ import lombok.extern.slf4j.Slf4j;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
+import java.util.Random;
+import java.util.UUID;
 
 /**
  * @author slorui
@@ -33,14 +36,14 @@ public class RpcClientProxy implements InvocationHandler {
     @Override
     public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
         RpcRequest rpcRequest = RpcRequest.builder()
+                .uuid(UUID.randomUUID().toString())
                 .interfaceName(method.getDeclaringClass().getName())
                 .methodName(method.getName())
                 .parameters(args)
                 .paramTypes(method.getParameterTypes())
                 .build();
-//        SocketClient rpcClient = new SocketClient(host,port);
-        RpcResponse response = (RpcResponse) rpcClient.doRequest(rpcRequest);
-        log.info("调用结果:{}",response);
-        return response.getData();
+        Result result = rpcClient.doRequest(rpcRequest);
+        Object data = result.getData();
+        return result.getData();
     }
 }

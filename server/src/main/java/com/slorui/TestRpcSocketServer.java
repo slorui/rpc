@@ -12,6 +12,6 @@ import com.rpc.server.nio.RpcSocketServer;
 public class TestRpcSocketServer {
 
     public static void main(String[] args) {
-        RpcSocketServer rpcSocketServer = new RpcSocketServer("127.0.0.1",8080);
+        RpcSocketServer rpcSocketServer = new RpcSocketServer("127.0.0.1",8081);
     }
 }

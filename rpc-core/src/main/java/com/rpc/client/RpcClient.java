@@ -1,7 +1,10 @@
 package com.rpc.client;
 
 
+import com.rpc.pojo.Result;
 import com.rpc.pojo.RpcRequest;
+import com.rpc.pojo.RpcResponse;
+import com.rpc.registry.instance.RegistryInstance;
 
 /**
  * @author slorui
@@ -9,5 +12,7 @@ import com.rpc.pojo.RpcRequest;
  */
 public interface RpcClient {
 
-    Object doRequest(RpcRequest rpcRequest);
+    Result doRequest(RpcRequest rpcRequest);
+
+    Result sendRequest(RpcRequest rpcRequest, RegistryInstance instance);
 }

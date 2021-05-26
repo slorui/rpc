@@ -2,7 +2,6 @@ package com.rpc.client.netty;
 
 
 import com.rpc.client.AbstractRpcClient;
-import com.rpc.client.RpcClient;
 import com.rpc.coder.CommonDecoder;
 import com.rpc.coder.CommonEncoder;
 import com.rpc.consumer.DefaultServiceConsumer;
@@ -11,13 +10,12 @@ import com.rpc.exception.RpcError;
 import com.rpc.exception.RpcException;
 import com.rpc.loadbalancer.LoadBalancer;
 import com.rpc.loadbalancer.RandomLoadBalancer;
-import com.rpc.pojo.RpcRequest;
-import com.rpc.pojo.RpcResponse;
-import com.rpc.provider.DefaultServiceProvider;
-import com.rpc.provider.ServiceProvider;
+import com.rpc.pojo.*;
 import com.rpc.registry.ServiceRegistry;
 import com.rpc.registry.instance.RegistryInstance;
 import com.rpc.serializer.KryoSerializer;
+import com.rpc.tolerant.FailFastInvoker;
+import com.rpc.tolerant.Invoker;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.*;
 import io.netty.channel.nio.NioEventLoopGroup;
@@ -26,7 +24,10 @@ import io.netty.channel.socket.nio.NioSocketChannel;
 import io.netty.util.AttributeKey;
 import lombok.extern.slf4j.Slf4j;
 
-import java.net.InetSocketAddress;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
 
 /**
  * @author slorui
@@ -36,6 +37,7 @@ import java.net.InetSocketAddress;
 public class RpcNettyClient extends AbstractRpcClient {
 
     private static final Bootstrap BOOTSTRAP;
+
 
     static {
         EventLoopGroup group = new NioEventLoopGroup();
@@ -65,35 +67,63 @@ public class RpcNettyClient extends AbstractRpcClient {
     }
 
     public RpcNettyClient(ServiceRegistry serviceRegistry, LoadBalancer loadBalancer, ServiceConsumer serviceProvider){
-        super(serviceRegistry, loadBalancer, serviceProvider);
+        this(serviceRegistry, serviceProvider, new FailFastInvoker(loadBalancer));
+    }
+
+    public RpcNettyClient(ServiceRegistry serviceRegistry, LoadBalancer loadBalancer, ServiceConsumer serviceProvider,
+                          Invoker invoker){
+        this(serviceRegistry, serviceProvider, invoker);
+        invoker.setLoadBalancer(loadBalancer);
+    }
+
+    public RpcNettyClient(ServiceRegistry serviceRegistry,ServiceConsumer serviceConsumer, Invoker invoker) {
+        super(serviceRegistry, serviceConsumer, invoker);
+        if(invoker.getLoadBalancer() == null){
+            invoker.setLoadBalancer(new RandomLoadBalancer());
+        }
+        invoker.setRpcClient(this);
+
     }
 
     @Override
-    public Object sendRequest(RpcRequest rpcRequest, RegistryInstance instance) {
-        ChannelFuture future;
+    public Result sendRequest(RpcRequest rpcRequest, RegistryInstance instance) {
+        ChannelFuture connectFuture = null;
         try {
-            future = BOOTSTRAP.connect(instance.getIp(), instance.getPort()).sync();
+            connectFuture = BOOTSTRAP.connect(instance.getIp(), instance.getPort());
+            boolean connectAwait = connectFuture.await(3, TimeUnit.SECONDS);
+            if(!connectAwait){
+                throw new RpcException(RpcError.CONNECT_TIME_OUT);
+            }
             log.info("客户端连接到服务器 {}:{}", instance.getIp(), instance.getPort());
-            Channel channel = future.channel();
+            Channel channel = connectFuture.channel();
             if(channel != null){
                 // 将请求写出
                 channel.writeAndFlush(rpcRequest).addListener(result -> {
-                    if(result.isSuccess()){
+                    if (result.isSuccess()) {
                         log.info(String.format("客户端发送消息: %s", rpcRequest.toString()));
-                    }else {
+                    } else {
                         log.error("发送消息时有错误发生: ", result.cause());
+                        throw new RpcException(RpcError.SEND_MESSAGE_ERROR);
                     }
                 });
+//                ChannelFuture future = channel.closeFuture();
+//                rpcContext.put(rpcRequest.getUuid(), future);
+//                rpcContext.put(rpcRequest, future);
+//                channel.closeFuture().sync();
                 // 等待服务器端关闭channel
-                channel.closeFuture().sync();
-                // 阻塞等待结果
+                ChannelFuture closeFuture = channel.closeFuture();
+                boolean closeAwait = closeFuture.await(3, TimeUnit.SECONDS);
+                if(!closeAwait){
+                    throw new RpcException(RpcError.REQUEST_TIME_OUT);
+                }
                 AttributeKey<RpcResponse> key = AttributeKey.valueOf("rpcResponse");
                 RpcResponse response = channel.attr(key).get();
-                return response;
+                rpcContext.put(rpcRequest.getUuid(),response);
+                return new SyncRpcResponse(rpcRequest, response);
             }
-
-        } catch (InterruptedException e) {
+        } catch (Exception e) {
             log.error("发送消息时有错误发生: ", e);
+            throw new RpcException(RpcError.SERVICE_NOT_FOUND);
         }
         return null;
     }

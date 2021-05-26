@@ -17,6 +17,8 @@ public class RpcRequest implements Serializable {
 
 //    private static final long serialVersionUID = 1L;
 
+    private String uuid;
+
     private String interfaceName;
 
     private String methodName;
@@ -24,4 +26,6 @@ public class RpcRequest implements Serializable {
     private Object[] parameters;
 
     private Class<?>[] paramTypes;
+
+    private int retries;
 }
