@@ -38,6 +38,7 @@ public class FailBackInvoker extends AbstractInvoker{
     @Override
     public Result invoke(RpcRequest rpcRequest, List<RegistryInstance> instances) {
         try {
+
             RegistryInstance select = loadBalancer.select(instances);
             return rpcClient.sendRequest(rpcRequest, select);
         } catch (RpcException e) {

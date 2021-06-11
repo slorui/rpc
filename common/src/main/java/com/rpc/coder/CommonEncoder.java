@@ -22,6 +22,7 @@ public class CommonEncoder extends MessageToByteEncoder {
 
     @Override
     protected void encode(ChannelHandlerContext ctx, Object msg, ByteBuf byteBuf) throws Exception {
+
         byteBuf.writeInt(MAGIC_NUMBER);
         if(msg instanceof RpcRequest){
             byteBuf.writeInt(PackageType.REQUEST_PACK.getCode());

@@ -7,13 +7,11 @@ import java.lang.annotation.Target;
 
 /**
  * @author slorui
- * data 2021/5/19
+ * data 2021/6/11
  */
 @Target(ElementType.TYPE)
 @Retention(RetentionPolicy.RUNTIME)
-public @interface Service {
+public @interface Reference {
 
     String name() default "";
-
-    int weight() default 100;
 }

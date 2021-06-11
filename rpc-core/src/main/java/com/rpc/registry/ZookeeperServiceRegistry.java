@@ -23,28 +23,29 @@ import java.util.List;
 @Slf4j
 public class ZookeeperServiceRegistry extends AbstractServiceRegistry {
 
-    private static final String SERVER_ADDR = "127.0.0.1:2181";
-
-    private static final int PORT = 6379;
-
-    private final LoadBalancer loadBalancer;
-
-    private static final ZkClient zkClient;
+    private ZkClient zkClient;
 
     private static final String ROOT_PATH = "/slorui-rpc";
 
-    static {
-        zkClient = new ZkClient(SERVER_ADDR);
+    private final LoadBalancer loadBalancer;
+
+    public ZookeeperServiceRegistry() {
+        this(new RandomLoadBalancer());
+    }
+
+    public ZookeeperServiceRegistry(LoadBalancer loadBalancer) {
+        this("127.0.0.1:2181",loadBalancer);
+    }
+
+    public ZookeeperServiceRegistry(String addr) {
+        this(addr, new RandomLoadBalancer());
+    }
+
+    public ZookeeperServiceRegistry(String addr, LoadBalancer loadBalancer) {
+        zkClient = new ZkClient(addr);
         if(!zkClient.exists(ROOT_PATH)){
             zkClient.createPersistent(ROOT_PATH);
         }
-    }
-
-    public ZookeeperServiceRegistry(){
-        this.loadBalancer = new RandomLoadBalancer();
-    }
-
-    public ZookeeperServiceRegistry(LoadBalancer loadBalancer){
         this.loadBalancer = loadBalancer;
     }
 

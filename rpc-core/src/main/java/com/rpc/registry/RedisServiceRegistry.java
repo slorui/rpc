@@ -9,6 +9,7 @@ import com.rpc.loadbalancer.LoadBalancer;
 import com.rpc.loadbalancer.RandomLoadBalancer;
 import com.rpc.registry.instance.RegistryInstance;
 import lombok.extern.slf4j.Slf4j;
+import org.I0Itec.zkclient.ZkClient;
 import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.Jedis;
 
@@ -24,24 +25,27 @@ import java.util.stream.Collectors;
 @Slf4j
 public class RedisServiceRegistry extends AbstractServiceRegistry {
 
-    private static final String HOST = "127.0.0.1";
 
-    private static final int PORT = 6379;
+    private LoadBalancer loadBalancer;
 
-    private final LoadBalancer loadBalancer;
+    private final Jedis jedis;
 
-    private static final Jedis jedis;
-
-    static {
-        jedis = new Jedis(new HostAndPort(HOST,PORT));
-    }
 
     public RedisServiceRegistry(){
-        this.loadBalancer = new RandomLoadBalancer();
+        this(new RandomLoadBalancer());
     }
 
-    public RedisServiceRegistry(LoadBalancer loadBalancer){
+    public RedisServiceRegistry(String addr){
+        this(addr,new RandomLoadBalancer());
+    }
+
+    public RedisServiceRegistry(LoadBalancer loadBalancer) {
+        this("127.0.0.1:6379", new RandomLoadBalancer());
+    }
+
+    public RedisServiceRegistry(String addr, LoadBalancer loadBalancer) {
         this.loadBalancer = loadBalancer;
+        jedis = new Jedis(new HostAndPort(addr.split(":")[0],Integer.valueOf(addr.split(":")[1])));
     }
 
     @Override

@@ -31,6 +31,6 @@ public class TestRpcNettyServer {
         LinkedHashMap<Object, Object> map = new LinkedHashMap<>();
 
         RpcNettyServer rpcNettyServer = new RpcNettyServer("127.0.0.1",8081,
-                new NacosServiceRegistry());
+                new ZookeeperServiceRegistry());
     }
 }

@@ -25,26 +25,32 @@ import java.util.List;
 @Slf4j
 public class NacosServiceRegistry extends AbstractServiceRegistry {
 
-    private static final String SERVER_ADDR = "127.0.0.1:8848";
-    private static final NamingService namingService ;
+    private NamingService namingService;
 
     private final LoadBalancer loadBalancer;
 
-    static {
-        try{
-            namingService = NamingFactory.createNamingService(SERVER_ADDR);
-        } catch (NacosException e) {
-            throw new RpcException(RpcError.FAILED_TO_CONNECT_TO_SERVICE_REGISTRY);
-        }
-    }
 
     public NacosServiceRegistry(){
+        this(new RandomLoadBalancer());
+    }
+
+    public NacosServiceRegistry(String addr) {
+        this(addr, new RandomLoadBalancer());
+    }
+    public NacosServiceRegistry(LoadBalancer loadBalancer) {
+        this("127.0.0.1:8848", loadBalancer);
+    }
+
+    public NacosServiceRegistry(String addr, LoadBalancer loadBalancer) {
+        try {
+            namingService = NamingFactory.createNamingService(addr);
+        } catch (NacosException e) {
+            e.printStackTrace();
+        }
         this.loadBalancer = new RandomLoadBalancer();
     }
 
-    public NacosServiceRegistry(LoadBalancer loadBalancer){
-        this.loadBalancer = loadBalancer;
-    }
+
 
     @Override
     public void register(String serviceName, InetSocketAddress inetSocketAddress) {

@@ -12,6 +12,9 @@ import lombok.extern.slf4j.Slf4j;
 
 import java.util.Set;
 import java.util.concurrent.Executors;
+import java.util.concurrent.LinkedBlockingDeque;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
 /**
  * @author slorui
@@ -76,8 +79,8 @@ public abstract class AbstractRpcServer implements RpcServer{
         }
         synchronized (this){
             if(!isStart){
-                Executors.newSingleThreadExecutor()
-                        .submit(this::start);
+                new ThreadPoolExecutor(1, 1, 0 , TimeUnit.SECONDS,
+                        new LinkedBlockingDeque<>()).submit(this::start);
                 isStart = !isStart;
             }
         }

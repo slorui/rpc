@@ -7,6 +7,7 @@ import lombok.extern.slf4j.Slf4j;
 
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.TimeUnit;
 
 /**
  * @author slorui
@@ -28,10 +29,16 @@ public class AsyncRpcResponse implements Result {
     public Object getData() {
         try {
             RpcResponse response;
+            long start = System.currentTimeMillis();
             while (true){
+                TimeUnit.MILLISECONDS.sleep(500);
                 if(rpcContext.get(rpcRequest.getUuid()) != null){
                     response = rpcContext.get(rpcRequest.getUuid());
                     break;
+                }
+                long cur = System.currentTimeMillis();
+                if(cur - start > 3 * 1000){
+                    throw new RpcException(RpcError.REQUEST_TIME_OUT);
                 }
             }
             rpcContext.remove(rpcRequest.getUuid());

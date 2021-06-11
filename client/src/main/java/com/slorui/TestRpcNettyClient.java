@@ -20,7 +20,7 @@ public class TestRpcNettyClient {
 
     public static void main(String[] args) {
 
-        RpcNettyClient rpcNettyClient = new RpcNettyClient(new NacosServiceRegistry(),
+        RpcNettyClient rpcNettyClient = new RpcNettyClient(new ZookeeperServiceRegistry("127.0.0.1:2181"),
                 new DefaultServiceConsumer(),new FailBackInvoker(new RandomLoadBalancer()));
         RpcClientProxy rpcClientProxy = new RpcClientProxy(rpcNettyClient);
         HelloService helloService = rpcClientProxy.getProxy(HelloService.class);
