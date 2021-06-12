@@ -1,10 +1,9 @@
 package com.rpc.annotation;
 
-import com.rpc.loadbalancer.LoadBalancer;
 import com.rpc.loadbalancer.RandomLoadBalancer;
 import com.rpc.registry.ZookeeperServiceRegistry;
 import com.rpc.spring.ReferenceBeanRegister;
-import com.rpc.tolerant.FailFastInvoker;
+import com.rpc.cluster.FailFastInvoker;
 import org.springframework.context.annotation.Import;
 import org.springframework.core.annotation.AliasFor;
 

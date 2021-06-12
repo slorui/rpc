@@ -1,23 +1,17 @@
 package com.rpc.client;
 
-import com.rpc.consumer.DefaultServiceConsumer;
 import com.rpc.consumer.ServiceConsumer;
 import com.rpc.exception.RpcError;
 import com.rpc.exception.RpcException;
-import com.rpc.loadbalancer.LoadBalancer;
 import com.rpc.pojo.Result;
 import com.rpc.pojo.RpcRequest;
 import com.rpc.pojo.RpcResponse;
-import com.rpc.provider.ServiceProvider;
 import com.rpc.registry.ServiceRegistry;
 import com.rpc.registry.instance.RegistryInstance;
-import com.rpc.tolerant.Invoker;
-import io.netty.channel.ChannelFuture;
+import com.rpc.cluster.Invoker;
 import lombok.extern.slf4j.Slf4j;
 
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
@@ -36,6 +30,7 @@ public abstract class AbstractRpcClient implements RpcClient{
         this.serviceRegistry = serviceRegistry;
         this.serviceConsumer = serviceConsumer;
         this.invoker = invoker;
+        serviceRegistry.setServiceConsumer(serviceConsumer);
         invoker.setRpcContext(rpcContext);
     }
 
@@ -55,7 +50,6 @@ public abstract class AbstractRpcClient implements RpcClient{
         List<RegistryInstance> instances = serviceConsumer.getServices(serviceName);
         if(instances == null){
             instances = serviceRegistry.loopUpService(serviceName);
-            serviceConsumer.registerServices(serviceName, instances);
         }
         return instances;
     }

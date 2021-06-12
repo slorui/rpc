@@ -10,12 +10,12 @@ import lombok.extern.slf4j.Slf4j;
  * data 2021/5/19
  */
 @Slf4j
-@Service(weight = 200)
-public class HelloServiceImpl implements HelloService {
+@Service
+public class HelloServiceImpl1 implements HelloService {
 
     @Override
     public String hello(HelloObject obj) {
         log.info("接收到：{}",obj.getMessage());
-        return "这是调用的返回值,id="+obj.getId();
+        return "这是调用的返回值11111,id="+obj.getId();
     }
 }

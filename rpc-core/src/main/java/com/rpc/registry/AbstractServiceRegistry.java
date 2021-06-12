@@ -1,5 +1,6 @@
 package com.rpc.registry;
 
+import com.rpc.consumer.ServiceConsumer;
 import com.rpc.provider.ServiceProvider;
 import com.rpc.registry.instance.RegistryInstance;
 
@@ -15,10 +16,17 @@ import java.util.Set;
 public abstract class AbstractServiceRegistry implements ServiceRegistry{
 
     protected ServiceProvider serviceProvider;
+    protected ServiceConsumer serviceConsumer;
 
     @Override
     public void setServiceProvider(ServiceProvider serviceProvider) {
         this.serviceProvider = serviceProvider;
+    }
+
+    @Override
+    public void setServiceConsumer(ServiceConsumer serviceConsumer) {
+        this.serviceConsumer = serviceConsumer;
+        serviceConsumer.setRegistry(this);
     }
 
     @Override
@@ -41,4 +49,7 @@ public abstract class AbstractServiceRegistry implements ServiceRegistry{
 
     @Override
     public abstract void clearRegistry();
+
+    @Override
+    public abstract void subscribe();
 }

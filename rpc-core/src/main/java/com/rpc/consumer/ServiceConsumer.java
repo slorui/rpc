@@ -1,5 +1,6 @@
 package com.rpc.consumer;
 
+import com.rpc.registry.ServiceRegistry;
 import com.rpc.registry.instance.RegistryInstance;
 
 import java.util.List;
@@ -13,4 +14,6 @@ public interface ServiceConsumer {
     List<RegistryInstance> getServices(String serviceName);
 
     void registerServices(String serviceName, List<RegistryInstance> instances);
+
+    void setRegistry(ServiceRegistry serviceRegistry);
 }

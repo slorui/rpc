@@ -2,6 +2,8 @@ package com.rpc.server;
 
 import com.rpc.annotation.Service;
 import com.rpc.annotation.ServiceScan;
+import com.rpc.consumer.DefaultServiceConsumer;
+import com.rpc.consumer.ServiceConsumer;
 import com.rpc.exception.RpcError;
 import com.rpc.exception.RpcException;
 import com.rpc.provider.DefaultServiceProvider;
@@ -24,10 +26,12 @@ import java.util.concurrent.TimeUnit;
 public abstract class AbstractRpcServer implements RpcServer{
 
     protected final ServiceProvider serviceProvider;
+    protected final ServiceConsumer serviceConsumer;
     private boolean isStart = false;
 
     public AbstractRpcServer(){
         this.serviceProvider = new DefaultServiceProvider();
+        this.serviceConsumer = new DefaultServiceConsumer();
     }
 
     public void scanService(){
@@ -87,4 +91,5 @@ public abstract class AbstractRpcServer implements RpcServer{
     }
 
     public abstract void setServiceProvider(ServiceProvider serviceProvider);
+    public abstract void serServiceConsumer(ServiceConsumer serviceConsumer);
 }

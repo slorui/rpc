@@ -1,5 +1,6 @@
 package com.rpc.registry;
 
+import com.rpc.consumer.ServiceConsumer;
 import com.rpc.provider.ServiceProvider;
 import com.rpc.registry.instance.RegistryInstance;
 
@@ -22,4 +23,7 @@ public interface ServiceRegistry {
 
     void setServiceProvider(ServiceProvider serviceProvider);
 
+    void setServiceConsumer(ServiceConsumer serviceConsumer);
+
+    void subscribe();
 }

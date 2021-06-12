@@ -9,6 +9,8 @@ import com.rpc.loadbalancer.LoadBalancer;
 import com.rpc.loadbalancer.RandomLoadBalancer;
 import com.rpc.registry.instance.RegistryInstance;
 import lombok.extern.slf4j.Slf4j;
+import org.I0Itec.zkclient.IZkChildListener;
+import org.I0Itec.zkclient.IZkDataListener;
 import org.I0Itec.zkclient.ZkClient;
 
 import java.net.InetSocketAddress;
@@ -50,6 +52,15 @@ public class ZookeeperServiceRegistry extends AbstractServiceRegistry {
     }
 
     @Override
+    public void subscribe() {
+        zkClient.subscribeChildChanges(ROOT_PATH, (rootPath, list) -> {
+            for (String childPath : list){
+                loopUpService(childPath);
+            }
+        });
+    }
+
+    @Override
     public void register(String serviceName, InetSocketAddress inetSocketAddress) {
         try {
             String path = ROOT_PATH + "/" + serviceName;
@@ -87,6 +98,7 @@ public class ZookeeperServiceRegistry extends AbstractServiceRegistry {
                 throw new RpcException(RpcError.SERVICE_NOT_FOUND);
             }
             List<RegistryInstance> instances = JSON.parseArray(obj, RegistryInstance.class);
+            serviceConsumer.registerServices(serviceName, instances);
             return instances;
         }catch (Exception e) {
             log.error("获取服务时有错误发生:", e);

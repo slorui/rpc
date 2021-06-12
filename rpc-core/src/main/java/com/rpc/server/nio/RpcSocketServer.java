@@ -1,5 +1,6 @@
 package com.rpc.server.nio;
 
+import com.rpc.consumer.ServiceConsumer;
 import com.rpc.provider.ServiceProvider;
 import com.rpc.registry.NacosServiceRegistry;
 import com.rpc.registry.ServiceRegistry;
@@ -47,6 +48,11 @@ public class RpcSocketServer extends AbstractRpcServer {
     @Override
     public void setServiceProvider(ServiceProvider serviceProvider) {
         serviceRegistry.setServiceProvider(serviceProvider);
+    }
+
+    @Override
+    public void serServiceConsumer(ServiceConsumer serviceConsumer) {
+        serviceRegistry.setServiceConsumer(serviceConsumer);
     }
 
     @Override

@@ -1,7 +1,6 @@
 package com.rpc.server;
 
 import com.rpc.registry.ServiceRegistry;
-import com.rpc.util.NacosUtil;
 import lombok.extern.slf4j.Slf4j;
 
 /**

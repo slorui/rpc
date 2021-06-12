@@ -12,10 +12,12 @@ import lombok.extern.slf4j.Slf4j;
 import org.I0Itec.zkclient.ZkClient;
 import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.Jedis;
+import redis.clients.jedis.JedisPubSub;
 
 import java.net.InetSocketAddress;
 import java.util.Iterator;
 import java.util.List;
+import java.util.concurrent.Executors;
 import java.util.stream.Collectors;
 
 /**
@@ -29,6 +31,8 @@ public class RedisServiceRegistry extends AbstractServiceRegistry {
     private LoadBalancer loadBalancer;
 
     private final Jedis jedis;
+
+    private final RedisSubPubListener listener;
 
 
     public RedisServiceRegistry(){
@@ -46,6 +50,7 @@ public class RedisServiceRegistry extends AbstractServiceRegistry {
     public RedisServiceRegistry(String addr, LoadBalancer loadBalancer) {
         this.loadBalancer = loadBalancer;
         jedis = new Jedis(new HostAndPort(addr.split(":")[0],Integer.valueOf(addr.split(":")[1])));
+        listener = new RedisSubPubListener();
     }
 
     @Override
@@ -66,6 +71,11 @@ public class RedisServiceRegistry extends AbstractServiceRegistry {
             log.error("注册服务时有错误发生:", e);
             throw new RpcException(RpcError.REGISTER_SERVICE_FAILED);
         }
+    }
+
+    @Override
+    public void subscribe() {
+        return;
     }
 
     @Override
@@ -93,6 +103,18 @@ public class RedisServiceRegistry extends AbstractServiceRegistry {
                     log.error("注销服务 {} 失败", serviceName, e);
                 }
             }
+        }
+    }
+
+    class RedisSubPubListener extends JedisPubSub{
+        @Override
+        public void onMessage(String channel, String message) {
+            super.onMessage(channel, message);
+        }
+
+        @Override
+        public void onSubscribe(String channel, int subscribedChannels) {
+            super.onSubscribe(channel, subscribedChannels);
         }
     }
 }

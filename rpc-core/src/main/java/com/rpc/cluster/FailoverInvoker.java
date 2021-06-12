@@ -1,4 +1,4 @@
-package com.rpc.tolerant;
+package com.rpc.cluster;
 
 
 import com.rpc.exception.RpcException;
@@ -17,7 +17,7 @@ import java.util.concurrent.*;
  * data 2021/5/25
  */
 @Slf4j
-public class FailBackInvoker extends AbstractInvoker{
+public class FailoverInvoker extends AbstractInvoker{
 
     private static final long RETRY_FAILED_PERIOD = 500;
 
@@ -29,7 +29,7 @@ public class FailBackInvoker extends AbstractInvoker{
 
     private final ConcurrentHashMap<RpcRequest,List<RegistryInstance>> failed = new ConcurrentHashMap<>();
 
-    public FailBackInvoker(LoadBalancer loadBalancer) {
+    public FailoverInvoker(LoadBalancer loadBalancer) {
         super(loadBalancer);
         this.retries = 3;
 

@@ -4,12 +4,8 @@ import com.rpc.client.RpcClientProxy;
 import com.rpc.client.netty.RpcNettyClient;
 import com.rpc.consumer.DefaultServiceConsumer;
 import com.rpc.loadbalancer.LoadBalancer;
-import com.rpc.loadbalancer.RandomLoadBalancer;
 import com.rpc.registry.ServiceRegistry;
-import com.rpc.registry.ZookeeperServiceRegistry;
-import com.rpc.tolerant.FailBackInvoker;
-import com.rpc.tolerant.FailFastInvoker;
-import com.rpc.tolerant.Invoker;
+import com.rpc.cluster.Invoker;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
@@ -78,8 +74,10 @@ public class ReferenceScannerConfig implements BeanDefinitionRegistryPostProcess
         } catch (NoSuchMethodException | IllegalAccessException | InstantiationException | InvocationTargetException e) {
             e.printStackTrace();
         }
+        DefaultServiceConsumer consumer = new DefaultServiceConsumer();
+        serviceRegistry.setServiceConsumer(consumer);
         RpcNettyClient rpcNettyClient = new RpcNettyClient(serviceRegistry,
-                new DefaultServiceConsumer(),invoker);
+                consumer,invoker);
         proxy = new RpcClientProxy(rpcNettyClient);
     }
 

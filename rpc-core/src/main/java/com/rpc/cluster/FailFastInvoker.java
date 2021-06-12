@@ -1,10 +1,9 @@
-package com.rpc.tolerant;
+package com.rpc.cluster;
 
 import com.rpc.exception.RpcException;
 import com.rpc.loadbalancer.LoadBalancer;
 import com.rpc.pojo.Result;
 import com.rpc.pojo.RpcRequest;
-import com.rpc.pojo.RpcResponse;
 import com.rpc.registry.instance.RegistryInstance;
 import lombok.extern.slf4j.Slf4j;
 

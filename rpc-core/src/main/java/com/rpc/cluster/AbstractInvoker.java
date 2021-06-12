@@ -1,4 +1,4 @@
-package com.rpc.tolerant;
+package com.rpc.cluster;
 
 import com.rpc.client.RpcClient;
 import com.rpc.loadbalancer.LoadBalancer;
@@ -6,7 +6,6 @@ import com.rpc.pojo.Result;
 import com.rpc.pojo.RpcRequest;
 import com.rpc.pojo.RpcResponse;
 import com.rpc.registry.instance.RegistryInstance;
-import io.netty.channel.ChannelFuture;
 
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;

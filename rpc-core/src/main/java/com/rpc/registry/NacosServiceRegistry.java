@@ -50,7 +50,10 @@ public class NacosServiceRegistry extends AbstractServiceRegistry {
         this.loadBalancer = new RandomLoadBalancer();
     }
 
-
+    @Override
+    public void subscribe() {
+        return;
+    }
 
     @Override
     public void register(String serviceName, InetSocketAddress inetSocketAddress) {

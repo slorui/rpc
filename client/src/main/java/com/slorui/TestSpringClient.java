@@ -3,6 +3,8 @@ package com.slorui;
 import com.rpc.annotation.ReferenceScan;
 import com.rpc.pojo.HelloObject;
 import com.rpc.pojo.HelloService;
+import com.rpc.registry.RedisServiceRegistry;
+import com.rpc.registry.ZookeeperServiceRegistry;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.context.annotation.Configuration;
 
@@ -22,6 +24,15 @@ public class TestSpringClient {
         ac.register(TestSpringClient.class);
         ac.refresh();
         HelloService helloService  = (HelloService) ac.getBean("helloService");
+        helloService.hello(new HelloObject(1,"this is a message"));
+        helloService.hello(new HelloObject(1,"this is a message"));
+        helloService.hello(new HelloObject(1,"this is a message"));
+        helloService.hello(new HelloObject(1,"this is a message"));
+        helloService.hello(new HelloObject(1,"this is a message"));
+        helloService.hello(new HelloObject(1,"this is a message"));
+        helloService.hello(new HelloObject(1,"this is a message"));
+        helloService.hello(new HelloObject(1,"this is a message"));
+        helloService.hello(new HelloObject(1,"this is a message"));
         helloService.hello(new HelloObject(1,"this is a message"));
     }
 }
